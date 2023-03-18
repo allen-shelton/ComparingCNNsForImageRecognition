@@ -1,4 +1,4 @@
-clear,clc, close all
+clear, close all
 
 vgg = vgg16;
 layers = vgg.Layers;
@@ -40,18 +40,18 @@ options = trainingOptions('adam', ...
 
 vggTransfer = trainNetwork(augimgTrain, layers, options);
 
-%%
+%% Show final Validation Accuracy/Loss
 [predictedLabels,probs] = classify(vggTransfer, augimgValidation); 
 [accuracy, loss] = calcAccuracyLoss(predictedLabels, probs, valImages.Labels)
 
-%%
+%% Plot Confusion Matrix
 confusion = plotConfusionMatrix(predictedLabels, valImages.Labels, accuracy, loss);
 
-%%
+%% Shows a random selection of validation images with their predictions
 plotPredictions(predictedLabels, probs, valImages);
 
-%%
+%% Plot Recall, Precision, and F1 Score data for all classes
 showMetrics(objectCategories, confusion, valImages.Labels);
 
-%%
+%% Plot ROC Curves for all classes
 plotROC(valImages.Labels, probs);

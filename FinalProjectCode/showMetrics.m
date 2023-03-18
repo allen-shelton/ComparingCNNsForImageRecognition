@@ -1,4 +1,6 @@
 function showMetrics(numclasses, confusionMatrix, truelabels)
+    % This function calculate the Recall, Precision, and F1 score of each
+    % image class
     
     Recall = zeros(numclasses, 1);
     Precision = zeros(numclasses, 1);

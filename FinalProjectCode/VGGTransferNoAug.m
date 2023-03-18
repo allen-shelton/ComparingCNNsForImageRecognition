@@ -1,17 +1,14 @@
-clear,clc, close all
+clear, close all
 
 vgg = vgg16;
 layers = vgg.Layers;
 
 inputSize = vgg.Layers(1).InputSize;
-allImages = imageDatastore('SCUImages', ...
+allImages = imageDatastore('ObjectImages', ...
     'IncludeSubfolders', true, ...
     'LabelSource', 'foldernames');
 [trainingImages, valImages] = splitEachLabel(allImages, 0.7, 'randomized');
-% imageAugmenter = imageDataAugmenter( ...
-%     'RandRotation',[-20,20], ...
-%     'RandXTranslation',[-3 3], ...
-%     'RandYTranslation',[-3 3]);
+
 augimgTrain = augmentedImageDatastore(inputSize(1:2),trainingImages);
 augimgValidation = augmentedImageDatastore(inputSize(1:2),valImages);
 objectCategories = numel(categories(trainingImages.Labels));
@@ -23,7 +20,8 @@ layers(40) = softmaxLayer;
 layers(41) = classificationLayer;
 
 %deepNetworkDesigner
-%%
+
+% Set training options
 options = trainingOptions('adam', ... 
     'InitialLearnRate', 0.00005, ...
     'MaxEpochs', 12, ... 
@@ -37,20 +35,21 @@ options = trainingOptions('adam', ...
     'Verbose',true, ...
     'VerboseFrequency',20);
 
+% Run transfer learning
 vggTransfer = trainNetwork(augimgTrain, layers, options);
 
-%%
+%% Show final Validation Accuracy/Loss
 [predictedLabels,probs] = classify(vggTransfer, augimgValidation); 
 [accuracy, loss] = calcAccuracyLoss(predictedLabels, probs, valImages.Labels)
 
-%%
+%% Plot Confusion Matrix
 confusion = plotConfusionMatrix(predictedLabels, valImages.Labels, accuracy, loss);
 
-%%
+%% Shows a random selection of validation images with their predictions
 plotPredictions(predictedLabels, probs, valImages);
 
-%%
+%% Plot Recall, Precision, and F1 Score data for all classes
 showMetrics(objectCategories, confusion, valImages.Labels);
 
-%%
+%% Plot ROC Curves for all classes
 plotROC(valImages.Labels, probs);

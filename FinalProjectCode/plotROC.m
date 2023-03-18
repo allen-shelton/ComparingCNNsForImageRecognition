@@ -1,4 +1,6 @@
 function plotROC(truelabels, probabilities)
+    % This function plot the ROC curves for each image class
+    
     fig = figure;
     Labels = categories(truelabels);
     for i = 1:numel(Labels)

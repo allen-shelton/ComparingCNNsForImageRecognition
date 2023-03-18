@@ -1,4 +1,7 @@
 function plotPredictions(predictions, probabilities, images)
+    % This function displays 16 random validation images along with their
+    % prediction and probability score
+    
     idx = randperm(numel(images.Files),16);
     figure
     for i = 1:16

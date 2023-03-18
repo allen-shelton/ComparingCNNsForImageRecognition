@@ -1,4 +1,5 @@
 function [accuracy, loss] = calcAccuracyLoss(predictions, probabilities, truelabels)
+    % Calculates the final validation accuracy and loss of the retrained network
     
     accuracy = mean(predictions == truelabels);
 

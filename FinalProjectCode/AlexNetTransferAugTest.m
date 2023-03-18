@@ -1,14 +1,23 @@
-clear, clc, close all
+clear, close all
+%% Data Augmentation Test %%
+% This script train AlexNet using 5 different data augmentation scenarios:
+%    1. Base Case (No Augmentation)
+%    2. Horizontal and Vertical Reflections
+%    3. Horizontal and Vertical Reflections, Rotations
+%    4. Horizontal and Vertical Translations
+%    5. Horizontal and Vertical Shearing, Scaling
 
+%% Load Network and Image data
 alex = alexnet;
 layers = alex.Layers;
 
 inputSize = alex.Layers(1).InputSize;
-allImages = imageDatastore('SCUImages', ...
+allImages = imageDatastore('ObjectImages', ...
     'IncludeSubfolders', true, ...
     'LabelSource', 'foldernames');
 [trainingImages, valImages] = splitEachLabel(allImages, 0.7, 'randomized');
 
+%% Case 1: No Augmentation
 augimgTrain = augmentedImageDatastore(inputSize(1:2),trainingImages);
 augimgValidation = augmentedImageDatastore(inputSize(1:2),valImages);
 objectCategories = numel(categories(trainingImages.Labels));
@@ -20,7 +29,7 @@ layers(24) = softmaxLayer;
 layers(25) = classificationLayer;
 
 %deepNetworkDesigner
-%%
+
 options = trainingOptions('adam', ... 
     'InitialLearnRate', 0.00005, ...
     'MaxEpochs', 12, ... 
@@ -37,9 +46,9 @@ options = trainingOptions('adam', ...
 [alexTransfer, info1] = trainNetwork(augimgTrain, layers, options);
 
 [predictedLabels,probs] = classify(alexTransfer, augimgValidation); 
-[accuracy, loss] = calcAccuracyLoss(predictedLabels, probs, valImages.Labels)
+[accuracy1, loss1] = calcAccuracyLoss(predictedLabels, probs, valImages.Labels)
 
-%%
+%% Case 2: Reflections
 imageAugmenter = imageDataAugmenter( ...
     'RandXReflection',true, ...
     'RandYReflection',true);
@@ -51,9 +60,9 @@ augimgValidation = augmentedImageDatastore(inputSize(1:2),valImages);
 [alexTransfer, info2] = trainNetwork(augimgTrain, layers, options);
 
 [predictedLabels,probs] = classify(alexTransfer, augimgValidation); 
-[accuracy, loss] = calcAccuracyLoss(predictedLabels, probs, valImages.Labels)
+[accuracy2, loss2] = calcAccuracyLoss(predictedLabels, probs, valImages.Labels)
 
-%%
+%% Case 3: Reflections and Rotations
 imageAugmenter = imageDataAugmenter( ...
     'RandXReflection',true, ...
     'RandYReflection',true, ...
@@ -66,9 +75,9 @@ augimgValidation = augmentedImageDatastore(inputSize(1:2),valImages);
 [alexTransfer, info3] = trainNetwork(augimgTrain, layers, options);
 
 [predictedLabels,probs] = classify(alexTransfer, augimgValidation); 
-[accuracy, loss] = calcAccuracyLoss(predictedLabels, probs, valImages.Labels)
+[accuracy3, loss3] = calcAccuracyLoss(predictedLabels, probs, valImages.Labels)
 
-%%
+%% Case 4: Translations
 imageAugmenter = imageDataAugmenter( ...
     'RandXTranslation',[-50 50], ...
     'RandYTranslation',[-50 50]);
@@ -80,9 +89,9 @@ augimgValidation = augmentedImageDatastore(inputSize(1:2),valImages);
 [alexTransfer, info4] = trainNetwork(augimgTrain, layers, options);
 
 [predictedLabels,probs] = classify(alexTransfer, augimgValidation); 
-[accuracy, loss] = calcAccuracyLoss(predictedLabels, probs, valImages.Labels)
+[accuracy4, loss4] = calcAccuracyLoss(predictedLabels, probs, valImages.Labels)
 
-%%
+%% Case 5 Shearing and Scaling
 imageAugmenter = imageDataAugmenter( ...
     'RandXShear',[-45 45], ...
     'RandYShear',[-45 45], ...
@@ -95,9 +104,9 @@ augimgValidation = augmentedImageDatastore(inputSize(1:2),valImages);
 [alexTransfer, info5] = trainNetwork(augimgTrain, layers, options);
 
 [predictedLabels,probs] = classify(alexTransfer, augimgValidation); 
-[accuracy, loss] = calcAccuracyLoss(predictedLabels, probs, valImages.Labels)
+[accuracy5, loss5] = calcAccuracyLoss(predictedLabels, probs, valImages.Labels)
 
-%%
+%% Plot Validation data for all 5 cases
 figure
 iterations = numel(info1.ValidationAccuracy)/2;
 plot(1:iterations,info1.ValidationAccuracy(2:2:end),'LineWidth',2)
